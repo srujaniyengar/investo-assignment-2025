@@ -1,0 +1,56 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.env
+.venv/
+venv/
+ENV/
+
+# Package metadata
+*.egg-info/
+dist/
+build/
+
+# Environment config files
+.env*
+*.env
+
+# Pytest and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.cache/
+
+# MyPy and type checking
+.mypy_cache/
+.dmypy.json
+.pytype/
+
+# Docker files
+*.pid
+docker-compose.override.yml
+
+# VSCode settings
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# CSV data (if you don’t want to commit raw stock data)
+csv/*.csv
+
+# Logs
+*.log
+
+# Misc
+*.sqlite3
+
