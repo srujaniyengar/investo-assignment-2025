@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    container_name: investo_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: investo_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: investo_api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:yourpassword@db:5432/investo_dbs
