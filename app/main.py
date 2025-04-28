@@ -72,9 +72,6 @@ def calculate_performance(session: SessionDep) -> StrategyPerformance:
     query = select(TickerData.datetime, TickerData.close).order_by(TickerData.datetime)
     datas = session.exec(query).all()
 
-    # Debugging log to check the number of rows retrieved
-    print(f"Number of rows retrieved: {len(datas)}")
-
     # Check if there is enough data for the performance calculation
     if len(datas) < 100:
         raise HTTPException(status_code=400, detail=f"Insufficient data: Only {len(datas)} rows available, 100 required.")
