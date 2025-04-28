@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -9,9 +9,22 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: stock_data_db
     volumes:
-      - ./create_ticker_table.sql:/create_ticker_table.sql
-      - ./copy_data.sql:/copy_data.sql
-      - ./init_db.sh:/docker-entrypoint-initdb.d/init_db.sh
-      - ./data.csv:/data.csv
+      - ./db:/docker-entrypoint-initdb.d/
     ports:
       - "5432:5432"
+
+  app:
+    build:
+      context: .
+    container_name: fastapi-app
+    environment:
+      DB_NAME: stock_data_db
+      DB_USERNAME: user
+      DB_PASSWORD: password
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

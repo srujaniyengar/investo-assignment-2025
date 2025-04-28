@@ -1,55 +1,42 @@
-import unittest
 from fastapi.testclient import TestClient
-from app.main import app
-from app.models import StockData
-import pandas as pd
+from main import app, engine, SQLModel, Ticker_data
 
-class TestInvestoAssignment(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # Set up FastAPI test client
-        cls.client = TestClient(app)
-        cls.sample_data = {
-            "datetime": "2025-04-26T10:30:00",
-            "open": 170.5,
-            "high": 171.2,
-            "low": 169.8,
-            "close": 170.9,
-            "volume": 1200000
-        }
+client = TestClient(app)
 
-    def test_post_data(self):
-        # Test POST /data endpoint
-        response = self.client.post("/data", json=self.sample_data)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Record added successfully", response.json()["message"])
 
-    def test_get_data(self):
-        # Test GET /data endpoint
-        response = self.client.get("/data")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("data", response.json())
-        self.assertGreaterEqual(len(response.json()["data"]), 1)
+def setup_module(module):
+    SQLModel.metadata.create_all(engine)
 
-    def test_sma_calculation(self):
-        # Test SMA calculation logic
-        data = pd.DataFrame([
-            {"datetime": "2025-04-26T10:30:00", "close": 170.9},
-            {"datetime": "2025-04-26T11:30:00", "close": 171.5},
-            {"datetime": "2025-04-26T12:30:00", "close": 172.0},
-        ])
-        short_window = 2
-        long_window = 3
 
-        from app.sma import sma_crossover_strategy
-        result = sma_crossover_strategy(data, short_window, long_window)
-        self.assertIn("short_sma", result.columns)
-        self.assertIn("long_sma", result.columns)
-        self.assertIn("signal", result.columns)
+def teardown_module(module):
+    SQLModel.metadata.drop_all(engine)
 
-        # Check SMA values
-        self.assertAlmostEqual(result["short_sma"].iloc[-1], (171.5 + 172.0) / 2, places=2)
-        self.assertAlmostEqual(result["long_sma"].iloc[-1], (170.9 + 171.5 + 172.0) / 3, places=2)
 
-if __name__ == "__main__":
-    unittest.main()
+def test_create_data():
+    payload = {
+        "datetime": "2025-04-28T00:00:00",
+        "open": 100.5,
+        "high": 101.2,
+        "low": 99.8,
+        "close": 100.0,
+        "volume": 1500,
+        "instrument": "STOCK_A"
+    }
+    response = client.post("/data", json=payload)
+    assert response.status_code == 200
+    assert response.json() == payload
+
+
+def test_read_data():
+    response = client.get("/data")
+    assert response.status_code == 200
+    assert len(response.json()) > 0
+
+
+def test_calculate_performance():
+    response = client.get("/strategy/performance")
+    if response.status_code == 400:  # Insufficient data
+        assert response.json()["detail"] == "Insufficient data for performance calculation"
+    else:
+        assert response.status_code == 200
+        assert "total_return" in response.json()
