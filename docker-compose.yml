@@ -2,25 +2,16 @@ version: '3.8'
 
 services:
   db:
-    build:
-      context: .
-      dockerfile: Dockerfile.db
-    container_name: investo_db
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: stock_data_db
+    volumes:
+      - ./create_ticker_table.sql:/create_ticker_table.sql
+      - ./copy_data.sql:/copy_data.sql
+      - ./init_db.sh:/docker-entrypoint-initdb.d/init_db.sh
+      - ./data.csv:/data.csv
     ports:
       - "5432:5432"
-    environment:
-      POSTGRES_DB: investo_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: yourpassword
-
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: investo_api
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    environment:
-      DATABASE_URL: postgresql://postgres:yourpassword@db:5432/investo_dbs

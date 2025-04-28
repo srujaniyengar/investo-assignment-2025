@@ -1,0 +1,1 @@
+\copy ticker_data(datetime, close, high, low, open, volume, instrument) FROM '/data.csv' DELIMITER ',' CSV HEADER;
